@@ -10,7 +10,7 @@ if ENV_PATH.exists():
 
 # Telegram
 TELEGRAM_BOT_TOKEN = os.getenv("8249940703:AAFDY4WfZy0UKas3DHyilpMPKnJ3YhI6EtU")
-TELEGRAM_CHANNEL_ID = os.getenv("@best_coupons_ali_dz")  # مثال: "@my_channel" أو -1001234567890
+TELEGRAM_CHANNEL_ID = os.getenv("-757441942")  # مثال: "@my_channel" أو -1001234567890
 
 # AliExpress Affiliate API
 ALI_APP_KEY = os.getenv("521886")
