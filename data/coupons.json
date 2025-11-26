@@ -1,0 +1,37 @@
+{
+  "ranges": [
+    {
+      "name": "RANGE_18_25",
+      "min_price": 18,
+      "max_price": 25,
+      "coupons": [
+        { "code": "3OFFA", "discount": 3 },
+        { "code": "3OFFB", "discount": 3 },
+        { "code": "3OFFC", "discount": 3 },
+        { "code": "3OFFD", "discount": 3 }
+      ]
+    },
+    {
+      "name": "RANGE_26_58",
+      "min_price": 26,
+      "max_price": 58,
+      "coupons": [
+        { "code": "4OFFA", "discount": 4 },
+        { "code": "4OFFB", "discount": 4 },
+        { "code": "4OFFC", "discount": 4 },
+        { "code": "4OFFD", "discount": 4 }
+      ]
+    },
+    {
+      "name": "RANGE_59_88",
+      "min_price": 59,
+      "max_price": 88,
+      "coupons": [
+        { "code": "9OFFA", "discount": 9 },
+        { "code": "9OFFB", "discount": 9 },
+        { "code": "9OFFC", "discount": 9 },
+        { "code": "9OFFD", "discount": 9 }
+      ]
+    }
+  ]
+}
