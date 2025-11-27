@@ -36,21 +36,20 @@ class TelegramBot:
         return resp.json()
 
     def send_photo_with_caption(
-    self,
-    photo_url: str,
-    caption: str,
-    parse_mode: Optional[str] = "HTML",
-) -> dict:
-    url = self._build_url("sendPhoto")
-    payload = {
-        "chat_id": self.channel_id,
-        "photo": photo_url,
-        "caption": caption,
-        "parse_mode": parse_mode,
-    }
-    print("DEBUG TELEGRAM PAYLOAD:", payload)  # تشخيص
-    resp = requests.post(url, json=payload, timeout=20)
-    print("DEBUG TELEGRAM RESPONSE:", resp.status_code, resp.text)  # تشخيص
-    resp.raise_for_status()
-    return resp.json()
-
+        self,
+        photo_url: str,
+        caption: str,
+        parse_mode: Optional[str] = "HTML",
+    ) -> dict:
+        url = self._build_url("sendPhoto")
+        payload = {
+            "chat_id": self.channel_id,
+            "photo": photo_url,
+            "caption": caption,
+            "parse_mode": parse_mode,
+        }
+        print("DEBUG TELEGRAM PAYLOAD:", payload)  # اختياري للتشخيص
+        resp = requests.post(url, json=payload, timeout=20)
+        print("DEBUG TELEGRAM RESPONSE:", resp.status_code, resp.text)  # اختياري
+        resp.raise_for_status()
+        return resp.json()
