@@ -1,15 +1,10 @@
 import time
 import hashlib
-import hmac
 import requests
 from typing import Dict, Any, List, Optional
-from .config import (
-    ALI_APP_KEY,
-    ALI_APP_SECRET,
-    ALI_TRACKING_ID,
-)
+from .config import ALI_APP_KEY, ALI_APP_SECRET, ALI_TRACKING_ID
 
-ALI_GATEWAY = "https://api.taobao.com/router/rest"  # شائع مع Affiliate API [web:126][web:128]
+ALI_GATEWAY = "https://api.taobao.com/router/rest"
 
 
 class AliExpressApiError(Exception):
@@ -19,8 +14,8 @@ class AliExpressApiError(Exception):
 class AliExpressApiClient:
     """
     عميل مبسط لـ AliExpress Affiliate API.
-    - search_products: يستخدم aliexpress.affiliate.product.query أو listPromotionProduct.
-    - get_affiliate_links: يحول productUrl إلى promotionUrl.
+    - search_products: يستخدم aliexpress.affiliate.product.query أو ما يشبهه.
+    - get_affiliate_link: يحول productUrl إلى promotionUrl.
     """
 
     def __init__(
@@ -39,12 +34,6 @@ class AliExpressApiClient:
         self.tracking_id = tracking_id
 
     def _sign(self, params: Dict[str, Any]) -> str:
-        """
-        إنشاء توقيع HMAC-MD5 أو MD5 حسب متطلبات AliExpress/Taobao.
-        هنا مثال تقليدي: sign = MD5(SECRET + concat(sorted_params) + SECRET).
-        ستحتاج لتعديلها إذا تغيّر بروتوكول التوقيع في وثائقهم. [web:128]
-        """
-        # ترتيب البارامترات أبجدياً
         sorted_items = sorted((k, v) for k, v in params.items() if v is not None)
         query = "".join(f"{k}{v}" for k, v in sorted_items)
         sign_str = f"{self.app_secret}{query}{self.app_secret}"
@@ -68,17 +57,14 @@ class AliExpressApiClient:
         resp = requests.post(
             ALI_GATEWAY,
             data=params,
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
-            },
+            headers={"Content-Type": "application/x-www-form-urlencoded;charset=utf-8"},
             timeout=20,
         )
         resp.raise_for_status()
         data = resp.json()
-        # يمكن هنا معالجة أخطاء AliExpress (كود خطأ، إلخ)
         return data
 
-       def search_products(
+    def search_products(
         self,
         category_info: Dict[str, Any],
         limit: int = 20,
@@ -87,7 +73,6 @@ class AliExpressApiClient:
     ) -> List[Dict[str, Any]]:
         """
         بحث عن منتجات حسب الفئة/الكلمات المفتاحية.
-        يلفّ حول aliexpress.affiliate.product.query (أو listPromotionProduct).
         """
         keywords = category_info.get("keywords")
         category_id = category_info.get("category_id")
@@ -107,24 +92,13 @@ class AliExpressApiClient:
         method_name = "aliexpress.affiliate.product.query"
         raw = self._request(method_name, api_params)
 
-        # سطر التشخيص المهم:
-        print("DEBUG ALI RAW:", raw)
+        print("DEBUG ALI RAW:", raw)  # تشخيص
 
         items = self._extract_products_from_response(raw)
         return items
 
-
     def _extract_products_from_response(self, raw: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        تحويل استجابة API إلى قائمة منتجات قياسية تحتوي على:
-        id, title, original_price, image_url, product_url
-        """
         products: List[Dict[str, Any]] = []
-
-        # هذه الشجرة مثال؛ اطبع raw لترى الشكل الحقيقي ثم عدّل.
-        # كثير من الأمثلة تضع النتائج في مفتاح مثل:
-        # raw["aliexpress_affiliate_product_query_response"]["resp_result"]["result"]["products"]
-        # [web:126][web:31]
         try:
             resp = raw.get("aliexpress_affiliate_product_query_response", {})
             resp_result = resp.get("resp_result", {})
@@ -141,8 +115,7 @@ class AliExpressApiClient:
                 "image_url": item.get("product_main_image_url")
                 or item.get("imageUrl")
                 or (item.get("allImageUrls") or "").split("|")[0],
-                "product_url": item.get("product_detail_url")
-                or item.get("productUrl"),
+                "product_url": item.get("product_detail_url") or item.get("productUrl"),
             }
             if product["id"] and product["title"] and product["product_url"]:
                 products.append(product)
@@ -150,9 +123,6 @@ class AliExpressApiClient:
         return products
 
     def _extract_price(self, item: Dict[str, Any]) -> float:
-        """
-        استخراج السعر من الحقول المحتملة (site_price, target_original_price, originalPrice...). [web:20]
-        """
         price_fields = [
             "target_sale_price",
             "target_original_price",
@@ -170,17 +140,13 @@ class AliExpressApiClient:
         return 0.0
 
     def get_affiliate_link(self, product_url: str) -> Optional[str]:
-        """
-        تحويل productUrl إلى promotionUrl مكتوب برقم التتبع. [web:4][web:103]
-        """
         api_params = {
             "tracking_id": self.tracking_id,
             "urls": product_url,
         }
-        method_name = "aliexpress.affiliate.link.generate"  # أو getPromotionLinks/listPromotionLinks [web:4][web:103]
+        method_name = "aliexpress.affiliate.link.generate"
         raw = self._request(method_name, api_params)
 
-        # قراءة الاستجابة واستخراج promotionUrl
         try:
             resp = raw.get("aliexpress_affiliate_link_generate_response", {})
             links = resp.get("resp_result", {}).get("result", {}).get("promotion_links", [])
@@ -190,7 +156,6 @@ class AliExpressApiClient:
         if not links:
             return None
 
-        # نأخذ أول رابط
         link_info = links[0]
         promo_url = link_info.get("promotion_url") or link_info.get("promotionUrl")
         return promo_url or product_url
