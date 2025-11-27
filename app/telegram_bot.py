@@ -48,8 +48,8 @@ class TelegramBot:
             "caption": caption,
             "parse_mode": parse_mode,
         }
-        print("DEBUG TELEGRAM PAYLOAD:", payload)  # اختياري للتشخيص
+        print("DEBUG TELEGRAM PAYLOAD:", payload)  # للتشخيص
         resp = requests.post(url, json=payload, timeout=20)
-        print("DEBUG TELEGRAM RESPONSE:", resp.status_code, resp.text)  # اختياري
+        print("DEBUG TELEGRAM RESPONSE:", resp.status_code, resp.text)  # للتشخيص
         resp.raise_for_status()
         return resp.json()
